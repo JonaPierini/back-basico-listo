@@ -6,20 +6,20 @@ class Server {
   constructor() {
     this.app = express();
     this.port = process.env.PORT || 3000;
-    this.usuariosPath = '/api/usuarios'
-    
+    this.usuariosPath = "/api/usuarios";
+
     // Conectar a base de datos
-    this.conectarDb()
-    
+    this.conectarDb();
+
     //Middlewares => funciones que se ejectuan cuando levantamos el servidor
     this.middlewares();
-    
+
     //Rutas de mi aplicacion
     this.routes();
   }
 
-  async conectarDb(){
-    await dbConnection()
+  async conectarDb() {
+    await dbConnection();
   }
 
   middlewares() {
@@ -28,12 +28,12 @@ class Server {
     //Cors protege nuestro servidor
     this.app.use(cors());
     //Lectura y parse del body
-    this.app.use(express.json())
+    this.app.use(express.json());
   }
 
   routes() {
     //http://localhost:8080/api/usuarios
-    this.app.use(this.usuariosPath, require('../routes/usuarios.routes'))
+    this.app.use(this.usuariosPath, require("../routes/usuarios.routes"));
   }
 
   listen() {
