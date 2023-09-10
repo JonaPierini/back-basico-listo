@@ -1,5 +1,15 @@
 const { Router } = require("express");
-const { usuarioGet, usuarioPost, usuarioDelete, usuarioPut, usuarioPatch } = require("../controllers/usuarios.controllers");
+const {
+  usuarioGet,
+  usuarioPost,
+  usuarioDelete,
+  usuarioPut,
+  usuarioPatch,
+} = require("../controllers/usuarios.controllers");
+//El check Validacion de correo
+const { check } = require("express-validator");
+const { validarCampos } = require("../middlewares/validar-campos");
+const { esRoleValido } = require("../helpers/db-validaciones");
 
 const router = Router();
 
@@ -8,10 +18,35 @@ router.get("/", usuarioGet);
 
 router.put("/:id", usuarioPut);
 
-router.post("/", usuarioPost);
+router.post(
+  "/",
+  [
+    //Que el campo nombre no este vacio
+    check("nombre", "El nombre es obligatorio").not().isEmpty(),
 
-router.patch('/', usuarioPatch)
+    //Que el campo password sea obligatorio y minimo 6 letras
+    check("password", "El password es obligatorio y mas de 6 letras").isLength({
+      min: 6,
+    }),
 
-router.delete("/",usuarioDelete);
+    //Que el campo correo corresponda a un tipo de email
+    check("correo", "El correo no es valido").isEmail(),
+
+    //Que el campo ROL sea de tipo 'Admin_Role', 'User_Role'
+    // check("rol", "No es un rol valido").isIn(["ADMIN_ROLE", "USER_ROLE"]),
+
+    //Validar el campo ROL desde la base de datos => hay que crear una nueva colección en la BD
+    //Custom es una validacion personalizada
+    check("rol").custom(esRoleValido),
+
+    //Viene de los middlewares
+    validarCampos,
+  ],
+  usuarioPost
+);
+
+router.patch("/", usuarioPatch);
+
+router.delete("/", usuarioDelete);
 
 module.exports = router;
