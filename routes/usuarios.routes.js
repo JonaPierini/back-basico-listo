@@ -9,14 +9,27 @@ const {
 //El check Validacion de correo
 const { check } = require("express-validator");
 const { validarCampos } = require("../middlewares/validar-campos");
-const { esRoleValido } = require("../helpers/db-validaciones");
+const {
+  esRoleValido,
+  existeEmail,
+  existUsuarioPorId,
+} = require("../helpers/db-validaciones");
 
 const router = Router();
 
 //GET => regresa esa data (es decir si yo voy al sitio web y pongo localhost:8080/api me muesta esa data)
 router.get("/", usuarioGet);
 
-router.put("/:id", usuarioPut);
+router.put(
+  "/:id",
+  [
+    check("id", "No es un ID valido").isMongoId(),
+    check("id").custom(existUsuarioPorId),
+    check("rol").custom(esRoleValido),
+    validarCampos,
+  ],
+  usuarioPut
+);
 
 router.post(
   "/",
@@ -35,9 +48,14 @@ router.post(
     //Que el campo ROL sea de tipo 'Admin_Role', 'User_Role'
     // check("rol", "No es un rol valido").isIn(["ADMIN_ROLE", "USER_ROLE"]),
 
-    //Validar el campo ROL desde la base de datos => hay que crear una nueva colección en la BD
+    //Validar el campo ROL DESDE la base de datos => hay que crear una nueva colección en la BD
+
     //Custom es una validacion personalizada
     check("rol").custom(esRoleValido),
+
+    //Validar el campo correo personalizado
+    //Validar el campo correo DESDE la base de datos
+    check("correo").custom(existeEmail),
 
     //Viene de los middlewares
     validarCampos,
@@ -47,6 +65,14 @@ router.post(
 
 router.patch("/", usuarioPatch);
 
-router.delete("/", usuarioDelete);
+router.delete(
+  "/:id",
+  [
+    check("id", "No es un ID valido").isMongoId(),
+    check("id").custom(existUsuarioPorId),
+    validarCampos,
+  ],
+  usuarioDelete
+);
 
 module.exports = router;
